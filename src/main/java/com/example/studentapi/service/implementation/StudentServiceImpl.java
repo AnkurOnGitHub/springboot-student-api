@@ -15,7 +15,10 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class StudentServiceImpl implements StudentService {
     private final StudentRepository studentRepository;
-    private final ModelMapper modelMapper;                                          //using model Mapper convert studentDto to Student[Entity] vice versa
+    private final ModelMapper modelMapper;
+    private final RedisService redisService;
+    //using model Mapper convert studentDto to Student[Entity] vice versa
+
     @Override
     public List<StudentDto> getAllStudent() {
 
@@ -28,12 +31,22 @@ public class StudentServiceImpl implements StudentService {
         Student s = studentRepository.save(student1);
         return modelMapper.map(s,StudentDto.class);
     }
-
+    //***********************************redis************************************
     @Override
-    public Optional<StudentDto> getStudentById(Long id) {
-        Student student = studentRepository.findById(id).orElseThrow(()->new IllegalArgumentException("Student not found..."));
-        StudentDto studentDto = modelMapper.map(student,StudentDto.class);
-        return Optional.ofNullable(studentDto);
+    public StudentDto getStudentById(Long id) {
+        StudentDto studentDto = redisService.get("student_id" + id, StudentDto.class);
+        if(studentDto != null){
+            System.out.println("found in cache");
+            return studentDto;
+        }
+        else{
+            Student student = studentRepository.findById(id).orElseThrow(()->new IllegalArgumentException("Student not found..."));
+            final StudentDto studentDto1 = modelMapper.map(student, StudentDto.class);
+            redisService.set("student_id" + id,studentDto1,60L);
+            return studentDto;
+        }
+
+
     }
 
     @Override

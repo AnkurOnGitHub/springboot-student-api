@@ -1,4 +1,5 @@
 package com.example.studentapi.controller;
+import com.example.studentapi.Entity.Student;
 import com.example.studentapi.dto.StudentDto;
 import com.example.studentapi.dto.AddStudentRequestDto;
 import com.example.studentapi.service.StudentService;
@@ -24,8 +25,8 @@ public class StudentController {
     }
 
     @GetMapping("/{myid}")
-    public ResponseEntity<Optional<StudentDto>> getStudentById(@PathVariable Long myid){
-        return ResponseEntity.ok(Optional.of(service.getStudentById(myid).orElseThrow()));
+    public ResponseEntity<StudentDto> getStudentById(@PathVariable Long myid){
+        return ResponseEntity.status(HttpStatus.FOUND).body(service.getStudentById(myid));
     }
 
 
